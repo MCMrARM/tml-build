@@ -1,0 +1,47 @@
+cmake_minimum_required(VERSION 2.6.3)
+if (DEFINED CMAKE_CROSSCOMPILING)
+  return()
+endif()
+
+include(${CMAKE_CURRENT_LIST_DIR}/android-cmake/android.toolchain.cmake)
+
+# base TML paths
+get_filename_component(TML_DEVTOOLS_PATH ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
+set(TML_PACKAGES_PATH ${TML_DEVTOOLS_PATH}/packages)
+
+# get build architecture
+set(TML_ARCH ${CMAKE_SYSTEM_PROCESSOR})
+if (TML_ARCH STREQUAL "armv7-a")
+  set(TML_ARCH "armeabi-v7a")
+elseif (TML_ARCH STREQUAL "i686")
+  set(TML_ARCH "x86")
+else()
+  message(FATAL_ERROR "Unsupported TML Mod architecture: ${TML_ARCH}")
+endif()
+
+# find TML packages
+function (find_tml_package pkg)
+  string(TOLOWER "${pkg}" pkgp)
+  string(TOUPPER "${pkg}" pkgu)
+  set(pkgp "${TML_PACKAGES_PATH}/${pkgp}")
+  if (IS_DIRECTORY ${pkgp} AND IS_DIRECTORY ${pkgp}/lib/${TML_ARCH}/)
+    file(GLOB_RECURSE pkg_libs "${pkgp}/lib/${TML_ARCH}/*.so")
+
+    set(${pkgu}_LIBRARIES ${pkg_libs} PARENT_SCOPE)
+    set(${pkgu}_INCLUDE_DIRS "${pkgp}/include/" PARENT_SCOPE)
+    #list(APPEND CMAKE_FIND_ROOT_PATH "${CMAKE_CURRENT_LIST_DIR}/../packages/")
+  else()
+    foreach (arg ${ARGN})
+      if (${arg} STREQUAL "REQUIRED")
+        set(PKG_REQUIRED TRUE)
+      elseif (${arg} STREQUAL "QUIET")
+        set(PKG_QUIET TRUE)
+      endif()
+    endforeach (arg)
+    if (PKG_REQUIRED)
+      message(FATAL_ERROR "Could NOT find TML package ${pkg}")
+    elseif (NOT PKG_QUIET)
+      message(STATUS "Could NOT find TML package ${pkg}")
+    endif()
+  endif()
+endfunction()
