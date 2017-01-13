@@ -9,15 +9,19 @@ import yaml
 import re
 import numbers
 import zipfile
+import shutil
 
 class color:
     RESET = '\033[0m'
     BOLD = '\033[1m'
     RED = '\033[31m'
+    GREEN = '\033[32m'
     YELLOW = '\033[33m'
+    CYAN = '\033[36m'
     LIGHT_YELLOW = '\033[93m'
 
     STATUS = BOLD + LIGHT_YELLOW
+    INFO = CYAN
     WARNING = LIGHT_YELLOW
     ERROR = BOLD + RED
 
@@ -134,6 +138,22 @@ def run_cmake(my_build_dir, my_source_dir, cmake_params):
         fatal_error("Failed to run CMake to generate build files")
     if subprocess.Popen([cmake_exec, "--build", "."], cwd=my_build_dir).wait() != 0:
         fatal_error("Failed to compile")
+    cmakefiles_path = os.path.join(my_build_dir, "CMakeFiles")
+    with open(os.path.join(cmakefiles_path, "TargetDirectories.txt")) as f:
+        built_target_dirs = [l.strip().rpartition(os.path.sep)[2] for l in f.readlines()]
+    all_target_dirs = [d for d in os.listdir(cmakefiles_path)
+                       if os.path.isdir(os.path.join(cmakefiles_path, d)) and d.endswith(".dir")]
+    for dir in all_target_dirs:
+        if dir not in built_target_dirs:
+            color_print(color.INFO, "Deleting old build target: " + dir[:-4] if dir.endswith(".dir") else dir)
+            print("Running clean script")
+            target_dir = os.path.join(cmakefiles_path, dir)
+            clean_script_path = os.path.join(target_dir, "cmake_clean.cmake")
+            if subprocess.Popen([cmake_exec, "-P", clean_script_path], cwd=my_build_dir).wait() != 0:
+                color_print(color.WARNING, "Failed to run clean script")
+            print("Deleting directory " + target_dir)
+            shutil.rmtree(target_dir)
+
     build_files = os.listdir(my_build_dir)
     return [i for i in build_files if i.endswith('.so')]
 
@@ -177,3 +197,4 @@ for lib in x86_libs:
     output_pkg.write(os.path.join(x86_build_dir, lib), "native/x86/" + lib)
 # TODO: copy directory
 output_pkg.close()
+color_print(color.BOLD + color.GREEN, "- Success!")
