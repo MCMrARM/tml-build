@@ -188,6 +188,16 @@ if "code" not in package_yaml:
 # TODO: check if package_yaml_native_libs exist
 
 # package
+def pack_dir(zip_file, zip_path, dir_path):
+    if not os.path.isdir(dir_path):
+        return
+    if zip_path.endswith("/"):
+        zip_path = zip_path[:-1]
+    for f in os.listdir(dir_path):
+        if os.path.isdir(zip_path + "/" + f):
+            pack_dir(zip_file, zip_path + "/" + f, os.path.join(dir_path, f))
+        else:
+            zip_file.write(os.path.join(dir_path, f), zip_path + "/" + f)
 color_print(color.STATUS, "- Packaging")
 output_pkg = zipfile.ZipFile(output_pkg_path, 'w', zipfile.ZIP_DEFLATED)
 output_pkg.writestr("package.yaml", yaml.dump(package_yaml))
@@ -195,6 +205,7 @@ for lib in arm_libs:
     output_pkg.write(os.path.join(arm_build_dir, lib), "native/armeabi-v7a/" + lib)
 for lib in x86_libs:
     output_pkg.write(os.path.join(x86_build_dir, lib), "native/x86/" + lib)
-# TODO: copy directory
+pack_dir(output_pkg, "native/", os.path.join(source_dir, "native"))
+pack_dir(output_pkg, "assets/", os.path.join(source_dir, "assets"))
 output_pkg.close()
 color_print(color.BOLD + color.GREEN, "- Success!")
