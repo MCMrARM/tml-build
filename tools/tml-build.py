@@ -157,7 +157,8 @@ def run_cmake(my_build_dir, my_source_dir, cmake_params):
     build_files = os.listdir(my_build_dir)
     return [i for i in build_files if i.endswith('.so')]
 
-global_cmake_params = ["-DCMAKE_TOOLCHAIN_FILE=" + tml_cmake_toolchain, "-DCMAKE_BUILD_TYPE=Release"]
+global_cmake_params = ["-DCMAKE_TOOLCHAIN_FILE=" + tml_cmake_toolchain, "-DCMAKE_BUILD_TYPE=Release",
+                       "-DANDROID_NATIVE_API_LEVEL=android-14"]
 if args.ndk is not None:
     global_cmake_params.append("-DANDROID_NDK=" + os.path.abspath(args.ndk))
 color_print(color.STATUS, "- Compiling for armeabi-v7a")
