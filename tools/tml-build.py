@@ -208,5 +208,6 @@ for lib in x86_libs:
     output_pkg.write(os.path.join(x86_build_dir, lib), "native/x86/" + lib)
 pack_dir(output_pkg, "native/", os.path.join(source_dir, "native"))
 pack_dir(output_pkg, "assets/", os.path.join(source_dir, "assets"))
+pack_dir(output_pkg, "resource_pack/", os.path.join(source_dir, "resource_pack"))
 output_pkg.close()
 color_print(color.BOLD + color.GREEN, "- Success!")
