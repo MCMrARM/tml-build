@@ -41,13 +41,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--path", default="", help="Use the specific source path")
 parser.add_argument("-o", "--out", default="package.tbp", help="Use the specific path for the resulting package")
 parser.add_argument("-b", "--build-dir", default="build/", help="Use the specific temporary build dir path")
-parser.add_argument("-n", "--ndk", help="Specify the Android NDK path")
+parser.add_argument("-ndk", "--ndk-path", help="Specify the Android NDK path")
+parser.add_argument("-cmake", "--cmake-path", default="cmake", help="Specify the CMake path")
 parser.add_argument("-c", "--color", action="store_true", help="Force enable color output")
 args = parser.parse_args()
 
 source_dir = os.path.abspath(args.path)
 output_pkg_path = os.path.abspath(args.out)
 build_dir = os.path.abspath(args.build_dir)
+cmake_exec = args.cmake_path
 if args.color:
     enable_color_printing = True
 
@@ -124,7 +126,6 @@ if not os.path.isfile(tml_cmake_toolchain):
     fatal_error("TML CMake toolchain not found")
 
 # check if cmake is installed
-cmake_exec = "cmake"
 try:
     subprocess.check_output([cmake_exec, "--version"])
 except OSError:
@@ -159,8 +160,8 @@ def run_cmake(my_build_dir, my_source_dir, cmake_params):
 
 global_cmake_params = ["-DCMAKE_TOOLCHAIN_FILE=" + tml_cmake_toolchain, "-DCMAKE_BUILD_TYPE=Release",
                        "-DANDROID_NATIVE_API_LEVEL=android-14"]
-if args.ndk is not None:
-    global_cmake_params.append("-DANDROID_NDK=" + os.path.abspath(args.ndk))
+if args.ndk_path is not None:
+    global_cmake_params.append("-DANDROID_NDK=" + os.path.abspath(args.ndk_path))
 color_print(color.STATUS, "- Compiling for armeabi-v7a")
 arm_build_dir = os.path.join(build_dir, "arm")
 arm_libs = run_cmake(arm_build_dir, source_dir, global_cmake_params + ["-DANDROID_ABI=armeabi-v7a"])
