@@ -39,7 +39,7 @@ def fatal_error(msg):
 # parse args
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--path", default="", help="Use the specific source path")
-parser.add_argument("-o", "--out", default="package.tbp", help="Use the specific path for the resulting package")
+parser.add_argument("-o", "--out", default="", help="Use the specific path for the resulting package")
 parser.add_argument("-b", "--build-dir", default="build/", help="Use the specific temporary build dir path")
 parser.add_argument("-ndk", "--ndk-path", help="Specify the Android NDK path")
 parser.add_argument("-cmake", "--cmake-path", default="cmake", help="Specify the CMake path")
@@ -201,6 +201,8 @@ def pack_dir(zip_file, zip_path, dir_path):
         else:
             zip_file.write(os.path.join(dir_path, f), zip_path + "/" + f)
 color_print(color.STATUS, "- Packaging")
+if os.path.isdir(output_pkg_path):
+    output_pkg_path = os.path.join(output_pkg_path, package_yaml["id"] + ".tbp")
 output_pkg = zipfile.ZipFile(output_pkg_path, 'w', zipfile.ZIP_DEFLATED)
 output_pkg.writestr("package.yaml", yaml.dump(package_yaml))
 for lib in arm_libs:
