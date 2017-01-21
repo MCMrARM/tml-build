@@ -1,21 +1,22 @@
 cmake_minimum_required(VERSION 2.6.3)
-if (DEFINED CMAKE_CROSSCOMPILING)
+if (DEFINED CMAKE_CROSSCOMPILING OR NOT DEFINED CMAKE_ANDROID_ARCH_ABI)
   return()
 endif()
+if( CMAKE_TOOLCHAIN_FILE )
+endif()
 
-include(${CMAKE_CURRENT_LIST_DIR}/android-cmake/android.toolchain.cmake)
+set(CMAKE_SYSTEM_NAME Android)
+set(CMAKE_ANDROID_API_MIN 14)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 
 # base TML paths
 get_filename_component(TML_DEVTOOLS_PATH ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
 set(TML_PACKAGES_PATH ${TML_DEVTOOLS_PATH}/packages)
 
 # get build architecture
-set(TML_ARCH ${CMAKE_SYSTEM_PROCESSOR})
-if (TML_ARCH STREQUAL "armv7-a")
-  set(TML_ARCH "armeabi-v7a")
-elseif (TML_ARCH STREQUAL "i686")
-  set(TML_ARCH "x86")
-else()
+set(TML_ARCH ${CMAKE_ANDROID_ARCH_ABI})
+message("TML Mod architecture: ${TML_ARCH}")
+if (NOT TML_ARCH STREQUAL "armeabi-v7a" AND NOT TML_ARCH STREQUAL "x86")
   message(FATAL_ERROR "Unsupported TML Mod architecture: ${TML_ARCH}")
 endif()
 

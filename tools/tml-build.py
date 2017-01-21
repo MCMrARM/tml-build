@@ -40,7 +40,7 @@ def fatal_error(msg):
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--path", default="", help="Use the specific source path")
 parser.add_argument("-o", "--out", default="", help="Use the specific path for the resulting package")
-parser.add_argument("-b", "--build-dir", default="build/", help="Use the specific temporary build dir path")
+parser.add_argument("-b", "--build-dir", help="Use the specific temporary build dir path")
 parser.add_argument("-ndk", "--ndk-path", help="Specify the Android NDK path")
 parser.add_argument("-cmake", "--cmake-path", default="cmake", help="Specify the CMake path")
 parser.add_argument("-c", "--color", action="store_true", help="Force enable color output")
@@ -48,7 +48,7 @@ args = parser.parse_args()
 
 source_dir = os.path.abspath(args.path)
 output_pkg_path = os.path.abspath(args.out)
-build_dir = os.path.abspath(args.build_dir)
+build_dir = os.path.abspath(args.build_dir) if args.build_dir is not None else os.path.join(source_dir, "build")
 cmake_exec = args.cmake_path
 if args.color:
     enable_color_printing = True
@@ -158,17 +158,16 @@ def run_cmake(my_build_dir, my_source_dir, cmake_params):
     build_files = os.listdir(my_build_dir)
     return [i for i in build_files if i.endswith('.so')]
 
-global_cmake_params = ["-DCMAKE_TOOLCHAIN_FILE=" + tml_cmake_toolchain, "-DCMAKE_BUILD_TYPE=Release",
-                       "-DANDROID_NATIVE_API_LEVEL=android-14"]
+global_cmake_params = ["-DCMAKE_TOOLCHAIN_FILE=" + tml_cmake_toolchain, "-DCMAKE_BUILD_TYPE=Release"]
 if args.ndk_path is not None:
-    global_cmake_params.append("-DANDROID_NDK=" + os.path.abspath(args.ndk_path))
+    global_cmake_params.append("-DCMAKE_ANDROID_NDK=" + os.path.abspath(args.ndk_path))
 color_print(color.STATUS, "- Compiling for armeabi-v7a")
 arm_build_dir = os.path.join(build_dir, "arm")
-arm_libs = run_cmake(arm_build_dir, source_dir, global_cmake_params + ["-DANDROID_ABI=armeabi-v7a"])
+arm_libs = run_cmake(arm_build_dir, source_dir, global_cmake_params + ["-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a"])
 print("Built libraries:", arm_libs)
 color_print(color.STATUS, "- Compiling for x86")
 x86_build_dir = os.path.join(build_dir, "x86")
-x86_libs = run_cmake(x86_build_dir, source_dir, global_cmake_params + ["-DANDROID_ABI=x86"])
+x86_libs = run_cmake(x86_build_dir, source_dir, global_cmake_params + ["-DCMAKE_ANDROID_ARCH_ABI=x86"])
 print("Built libraries:", x86_libs)
 
 # add code section if not here
