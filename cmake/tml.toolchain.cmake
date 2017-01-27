@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 2.6.3)
+
+set(CMAKE_SYSTEM_NAME Android)
+set(CMAKE_ANDROID_API_MIN 14)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+
 if (DEFINED CMAKE_CROSSCOMPILING OR NOT DEFINED CMAKE_ANDROID_ARCH_ABI)
   return()
 endif()
 if( CMAKE_TOOLCHAIN_FILE )
 endif()
-
-set(CMAKE_SYSTEM_NAME Android)
-set(CMAKE_ANDROID_API_MIN 14)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 
 # base TML paths
 get_filename_component(TML_DEVTOOLS_PATH ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
