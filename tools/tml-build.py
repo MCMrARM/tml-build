@@ -43,6 +43,7 @@ parser.add_argument("-o", "--out", default="", help="Use the specific path for t
 parser.add_argument("-b", "--build-dir", help="Use the specific temporary build dir path")
 parser.add_argument("-ndk", "--ndk-path", help="Specify the Android NDK path")
 parser.add_argument("-cmake", "--cmake-path", default="cmake", help="Specify the CMake path")
+parser.add_argument("-ninja", "--ninja-path", help="Specify the Ninja build system path (needed on Windows only)")
 parser.add_argument("-c", "--color", action="store_true", help="Force enable color output")
 args = parser.parse_args()
 
@@ -159,6 +160,9 @@ def run_cmake(my_build_dir, my_source_dir, cmake_params):
     return [i for i in build_files if i.endswith('.so')]
 
 global_cmake_params = ["-DCMAKE_TOOLCHAIN_FILE=" + tml_cmake_toolchain, "-DCMAKE_BUILD_TYPE=Release"]
+if args.ninja_path is not None:
+    global_cmake_params.append("-GNinja")
+    global_cmake_params.append("-DCMAKE_MAKE_PROGRAM=" + os.path.abspath(args.ninja_path))
 if args.ndk_path is not None:
     global_cmake_params.append("-DCMAKE_ANDROID_NDK=" + os.path.abspath(args.ndk_path))
 color_print(color.STATUS, "- Compiling for armeabi-v7a")
