@@ -133,10 +133,10 @@ except OSError:
     fatal_error("CMake not found")
 
 # run cmake
-def run_cmake(my_build_dir, my_source_dir, cmake_params):
+def run_cmake(my_build_dir, my_source_dir, cmake_params, cmake_env):
     if not os.path.isdir(my_build_dir):
         os.makedirs(my_build_dir)
-    if subprocess.Popen([cmake_exec] + cmake_params + [my_source_dir], cwd=my_build_dir).wait() != 0:
+    if subprocess.Popen([cmake_exec] + cmake_params + [my_source_dir], cwd=my_build_dir, env=cmake_env).wait() != 0:
         fatal_error("Failed to run CMake to generate build files")
     if subprocess.Popen([cmake_exec, "--build", "."], cwd=my_build_dir).wait() != 0:
         fatal_error("Failed to compile")
@@ -160,18 +160,19 @@ def run_cmake(my_build_dir, my_source_dir, cmake_params):
     return [i for i in build_files if i.endswith('.so')]
 
 global_cmake_params = ["-DCMAKE_TOOLCHAIN_FILE=" + tml_cmake_toolchain, "-DCMAKE_BUILD_TYPE=Release"]
+global_cmake_env = os.environ.copy()
 if args.ninja_path is not None:
     global_cmake_params.append("-GNinja")
     global_cmake_params.append("-DCMAKE_MAKE_PROGRAM=" + os.path.abspath(args.ninja_path))
 if args.ndk_path is not None:
-    global_cmake_params.append("-DCMAKE_ANDROID_NDK=" + os.path.abspath(args.ndk_path))
+    global_cmake_env["ANDROID_NDK"] = os.path.abspath(args.ndk_path)
 color_print(color.STATUS, "- Compiling for armeabi-v7a")
 arm_build_dir = os.path.join(build_dir, "arm")
-arm_libs = run_cmake(arm_build_dir, source_dir, global_cmake_params + ["-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a"])
+arm_libs = run_cmake(arm_build_dir, source_dir, global_cmake_params + ["-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a"], global_cmake_env)
 print("Built libraries:", arm_libs)
 color_print(color.STATUS, "- Compiling for x86")
 x86_build_dir = os.path.join(build_dir, "x86")
-x86_libs = run_cmake(x86_build_dir, source_dir, global_cmake_params + ["-DCMAKE_ANDROID_ARCH_ABI=x86"])
+x86_libs = run_cmake(x86_build_dir, source_dir, global_cmake_params + ["-DCMAKE_ANDROID_ARCH_ABI=x86"], global_cmake_env)
 print("Built libraries:", x86_libs)
 
 # add code section if not here
