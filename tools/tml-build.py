@@ -200,7 +200,7 @@ def pack_dir(zip_file, zip_path, dir_path):
     if zip_path.endswith("/"):
         zip_path = zip_path[:-1]
     for f in os.listdir(dir_path):
-        if os.path.isdir(zip_path + "/" + f):
+        if os.path.isdir(os.path.join(dir_path, f)):
             pack_dir(zip_file, zip_path + "/" + f, os.path.join(dir_path, f))
         else:
             zip_file.write(os.path.join(dir_path, f), zip_path + "/" + f)
