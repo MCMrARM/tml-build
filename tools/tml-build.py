@@ -156,8 +156,11 @@ def run_cmake(my_build_dir, my_source_dir, cmake_params, cmake_env):
             print("Deleting directory " + target_dir)
             shutil.rmtree(target_dir)
 
-    build_files = os.listdir(my_build_dir)
-    return [i for i in build_files if i.endswith('.so')]
+    build_files = []
+    for root, dirs, files in os.walk(my_build_dir):
+        rel = os.path.relpath(root, my_build_dir)
+        build_files += [os.path.join("" if rel is os.curdir else rel, i) for i in files if i.endswith('.so')]
+    return build_files
 
 global_cmake_params = ["-DCMAKE_TOOLCHAIN_FILE=" + tml_cmake_toolchain, "-DCMAKE_BUILD_TYPE=Release"]
 global_cmake_env = os.environ.copy()
